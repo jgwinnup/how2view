@@ -17,21 +17,7 @@ if __name__ == "__main__":
     # optionally output oracle file
 
     # buffers for corpus bleu
-    args = parser.parse_args()oracleceiling 0.0.1
-2021-06-08 16:20:45.009942
-ref: ../data/dev5/text.pt
-t1:  outputs/nmt-en-pt.out.beam6
-t2:  outputs/nmt-visual-en-pt.out.beam6
-
-2305 lines
-   t1 > t2: 620 (26.8980%)
-   t1 < t2: 597 (25.9002%)
- identical: 967 (41.9523%)
-same score: 121 (5.2495%)
-
-    t1 sacrebleu: BLEU = 56.24 79.3/62.0/50.0/40.7 (BP = 1.000 ratio = 1.010 hyp_len = 44503 ref_len = 44075)
-    t2 sacrebleu: BLEU = 56.18 79.1/61.9/50.1/40.6 (BP = 1.000 ratio = 1.011 hyp_len = 44573 ref_len = 44075)
-oracle sacrebleu: BLEU = 58.91 80.7/64.4/53.0/43.8 (BP = 1.000 ratio = 1.010 hyp_len = 44508 ref_len = 44075)
+    args = parser.parse_args()
     ref_lines = []
     oracle = []
     t1_lines = []
