@@ -44,7 +44,7 @@ if __name__ == "__main__":
                 # text = fields[4] + " " + fields[6]
 
                 # train on tokenized object labels
-                text = fields[2]
+                text = fields[-1]
 
                 train_set.append(" ".join(tokenize(text)))
             else:
