@@ -1,31 +1,26 @@
-import pickle
-
-import nltk
-import numpy as np
-import streamlit as st
-import pandas as pd
-import json
 import glob
+import json
+import pickle
 import string
 from os.path import splitext, basename
-from st_aggrid import AgGrid, GridUpdateMode, GridOptionsBuilder
 
+import matplotlib.pyplot as plt
+import pandas as pd
+import streamlit as st
 from nltk import word_tokenize
 from nltk.corpus import stopwords
 from sklearn.metrics.pairwise import cosine_similarity
+from st_aggrid import AgGrid, GridUpdateMode, GridOptionsBuilder
 from wordcloud import WordCloud
-import matplotlib.pyplot as plt
-from sklearn.feature_extraction.text import TfidfTransformer, TfidfVectorizer
 
 datadir = '/tmpssd2/how2-dataset/how2/'
 videodir = f'{datadir}/how2'
 metafname = f'{datadir}/how2-metadata.txt'
 tagfname = f'{datadir}/how2-tags.txt'
-#datadir = '/Users/jgwinnup/work/how2/how2/how2'
 
 
 # YOLOv5 COCO Classes
-nc = 80  # number of classes
+# nc = 80  # number of classes
 names = ['PERSON', 'BICYCLE', 'CAR', 'MOTORCYCLE', 'AIRPLANE', 'BUS', 'TRAIN', 'TRUCK', 'BOAT', 'TRAFFIC_LIGHT',
          'FIRE_HYDRANT', 'STOP_SIGN', 'PARKING_METER', 'BENCH', 'BIRD', 'CAT', 'DOG', 'HORSE', 'SHEEP', 'COW',
          'ELEPHANT', 'BEAR', 'ZEBRA', 'GIRAFFE', 'BACKPACK', 'UMBRELLA', 'HANDBAG', 'TIE', 'SUITCASE', 'FRISBEE',
@@ -36,7 +31,7 @@ names = ['PERSON', 'BICYCLE', 'CAR', 'MOTORCYCLE', 'AIRPLANE', 'BUS', 'TRAIN', '
          'MICROWAVE', 'OVEN', 'TOASTER', 'SINK', 'REFRIGERATOR', 'BOOK', 'CLOCK', 'VASE', 'SCISSORS', 'TEDDY_BEAR',
          'HAIR_DRIER', 'TOOTHBRUSH']  # class names
 
-@st.cache
+# @st.cache
 def load_desctitle_models():
     tfidf = pickle.load(open('model/how2-title+desc.tfidf', 'rb'))
     tfidf_vectorizer = pickle.load(open('model/how2-title+desc.vec', 'rb'))
@@ -44,10 +39,11 @@ def load_desctitle_models():
     return tfidf, tfidf_vectorizer
 
 
-@st.cache
+# @st.cache
 def load_yolov5_models():
-    tfidf = pickle.load(open('model/how2-yolov5labels.tfidf', 'rb'))
-    tfidf_vectorizer = pickle.load(open('model/how2-yolov5labels.vec', 'rb'))
+    # used updated models with all labels
+    tfidf = pickle.load(open('model/how2-yolov5labels-all.tfidf', 'rb'))
+    tfidf_vectorizer = pickle.load(open('model/how2-yolov5labels-all.vec', 'rb'))
 
     return tfidf, tfidf_vectorizer
 
@@ -76,7 +72,6 @@ def load_tags(fname):
 
         while line:
             fields = line.strip().split('\t')
-            #tags.append( (fields[0], fields[1]))
             tags[fields[0]] = int(fields[1])
             line = f.readline()
 
@@ -123,12 +118,14 @@ def tokenize(sent):
     ww = word_tokenize(sent)
     return [w.lower() for w in ww if (not w.lower() in stop_words) and (not w in string.punctuation)]
 
+
 def get_tfidf_query_similarity(vectorizer, docs_tfidf, query):
 
     query_tfidf = vectorizer.transform([" ".join(tokenize(query))])
     cosine_sim = cosine_similarity(query_tfidf, docs_tfidf).flatten()
 
     return cosine_sim
+
 
 @st.cache
 def load_stopwords():
@@ -147,7 +144,7 @@ if __name__ == '__main__':
     # Make radio buttons flow horizontally
     st.write('<style>div.row-widget.stRadio > div{flex-direction:row;justify-content: left;} </style>',
              unsafe_allow_html=True)
-    model = st.radio("TD-IDF Model:", ("Desc+Title", "YOLOv5 Objects"))
+    model = st.radio("TF-IDF Model:", ("Desc+Title", "YOLOv5 Objects"))
 
     if model == "Desc+Title":
         tfidf, tfidf_vectorizer = load_desctitle_models()

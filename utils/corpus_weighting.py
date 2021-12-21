@@ -122,13 +122,15 @@ if __name__ == "__main__":
             id = line[:11]  # youtube videos only first 11 chars
             # short circuit for now
             if id in norm_vid_weights:
-                weights.write(f'{1.0}\n')
+                # weights.write(f'{1.0}\n')
                 # weights.write(f'{norm_vid_weights[id]}\n')
                 # weights.write(f'{norm_vid_weights[id]}\n')
+                weights.write(f'{args.default_weight}\n')
             else:
                 # print(f'{ctr} {id} No weight found! Using default: {args.default_weight}')
                 missing_count += 1
-                weights.write(f'{args.default_weight}\n')
+                weights.write(f'{1.0}\n')
+                #weights.write(f'{args.default_weight}\n')
             ctr += 1
 
     with open(args.stats, 'w') as stats:
