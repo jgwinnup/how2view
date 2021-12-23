@@ -1,3 +1,5 @@
+import logging
+import sys
 from collections import deque
 import argparse
 from functools import partial
@@ -176,7 +178,21 @@ if __name__ == "__main__":
     ref = "O_DA0 aileron_NCMS é_VMI a_DA0 superfície_NCFS de_SPS controle_NCMS na_SP+DA asa_NCFS que_PR0 é_VMI controlada_VMP pelo_SP+DA movimento_NCMS lateral_AQ0 direito_AQ0 e_CC esquerdo_AQ0 do_SPS bastão_NCMS ._Fp"
     hyp = "O_DA0 acompanhante_NCCS é_VMI a_DA0 superfície_NCFS de_SPS controle_NCMS na_SP+DA asa_NCFS que_PR0 é_VMI controlada_VMP pelo_SP+DA movimento_NCMS lateral_AQ0 e_CC a_DA0 esquerda_NCFS do_SPS bastão_NCMS ._Fp "
 
-    with open(args.ref, 'r') as ref_file, open(args.hyp, 'r') as hyp_file, open(args.out, 'w') as outfile:
+    # overly fancy logging example
+    log = logging.getLogger()
+    log.setLevel(logging.DEBUG)
+    output_file_handler = logging.FileHandler(args.out, mode='w')  # overwrite each run
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    log.addHandler(output_file_handler)
+    log.addHandler(stdout_handler)
+
+    with open(args.ref, 'r') as ref_file, open(args.hyp, 'r') as hyp_file:  #, open(args.out, 'w') as outfile:
+        ctr = 1
+        total_aligned = 0
+        src_unaligned = 0
+        tgt_unaligned = 0
+        src_upos = {}  # src unaligned POS counts
+        tgt_upos = {}  # tgt unaligned POS counts
 
         for ref, hyp in zip(ref_file, hyp_file):
             ref_tok = ref.split(" ")
@@ -187,10 +203,46 @@ if __name__ == "__main__":
             hyp_w = [x.split('_')[0] for x in hyp_tok]
 
             b = align_fast(ref_w, hyp_w)
-
+            total_aligned += len(b)
             # print(f'Alignments: {list(a)}')
-            print(f'Alignment: {list(b)}')
+            # print(f'Alignment: {list(b)}')
 
-            # find unaligned...
+            for tup in b:
+                if tup[0] is None:
+                    ut = hyp_tok[tup[1]]
+                    utp = ut.split('_')[1]
+                    print(f'{ctr} Target unaligned: {tup} :: {hyp_tok[tup[1]]} {utp}')
+                    tgt_unaligned += 1
+
+                    # increment tgt pos for this token
+                    if utp not in tgt_upos:
+                        tgt_upos[utp] = 0
+                    tgt_upos[utp] += 1
+
+                if tup[1] is None:
+                    ut = ref_tok[tup[0]]
+                    utp = ut.split('_')[1]
+                    print(f'{ctr} Source unaligned: {tup} :: {ref_tok[tup[0]]}')
+                    src_unaligned += 1
+
+                    # increment tgt pos for this token
+                    if utp not in src_upos:
+                        src_upos[utp] = 0
+                    src_upos[utp] += 1
+
+            ctr +=1
+            # f
+            # ind unaligned...
 
             # print_alignment(ref_w, hyp_w, b)
+        log.debug(f'total alignments:\t{total_aligned}')
+        log.debug(f'source unaligned:\t{src_unaligned}')
+        log.debug(f'target unaligned:\t{tgt_unaligned}')
+
+        log.debug('Unaligned source word POS:')
+        for k, v in [(k, v) for k, v in sorted(src_upos.items(), key=lambda item: item[1], reverse=True)]:
+            log.debug(f'{k}\t{v}')
+
+        log.debug('Unaligned target word POS:')
+        for k, v in [(k, v) for k, v in sorted(tgt_upos.items(), key=lambda item: item[1], reverse=True)]:
+            log.debug(f'{k}\t{v}')
