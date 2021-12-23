@@ -172,12 +172,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    x = ['A', 'B', 'C', 'D', 'E']
-    y = ['A', 'B', 'D', 'C', 'E']
-
-    ref = "O_DA0 aileron_NCMS é_VMI a_DA0 superfície_NCFS de_SPS controle_NCMS na_SP+DA asa_NCFS que_PR0 é_VMI controlada_VMP pelo_SP+DA movimento_NCMS lateral_AQ0 direito_AQ0 e_CC esquerdo_AQ0 do_SPS bastão_NCMS ._Fp"
-    hyp = "O_DA0 acompanhante_NCCS é_VMI a_DA0 superfície_NCFS de_SPS controle_NCMS na_SP+DA asa_NCFS que_PR0 é_VMI controlada_VMP pelo_SP+DA movimento_NCMS lateral_AQ0 e_CC a_DA0 esquerda_NCFS do_SPS bastão_NCMS ._Fp "
-
     # overly fancy logging example
     log = logging.getLogger()
     log.setLevel(logging.DEBUG)
