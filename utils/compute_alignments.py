@@ -183,60 +183,99 @@ if __name__ == "__main__":
     with open(args.ref, 'r') as ref_file, open(args.hyp, 'r') as hyp_file:  #, open(args.out, 'w') as outfile:
         ctr = 1
         total_aligned = 0
-        src_unaligned = 0
-        tgt_unaligned = 0
-        src_upos = {}  # src unaligned POS counts
-        tgt_upos = {}  # tgt unaligned POS counts
+        ref_unaligned = 0
+        hyp_unaligned = 0
+        ref_upos = {}  # src unaligned POS counts
+        hyp_upos = {}  # tgt unaligned POS counts
+
+        ref_pos = {}  # src total POS counts
+        hyp_pos = {}  # tgt total POS counts
 
         for ref, hyp in zip(ref_file, hyp_file):
-            ref_tok = ref.split(" ")
-            hyp_tok = hyp.split(" ")
+
+            # print(f'ref: {ref}')
+            # print(f'hyp: {hyp}')
+
+            # split with no args splits on multiple whitespace
+            ref_tok = ref.strip().split() #" ")
+            hyp_tok = hyp.strip().split() #" ")
 
             # align with surface forms
             ref_w = [x.split('_')[0] for x in ref_tok]
             hyp_w = [x.split('_')[0] for x in hyp_tok]
 
+            # global POS count for ratios
+            # print(f'{ctr} ref tok: {ref_tok}')
+            ref_p = [x.split('_')[1] for x in ref_tok]
+            hyp_p = [x.split('_')[1] for x in hyp_tok]
+
+            for p in ref_p:
+                if p in ref_pos:
+                    ref_pos[p] += 1
+                else:
+                    ref_pos[p] = 1
+
+            for p in hyp_p:
+                if p in hyp_pos:
+                    hyp_pos[p] += 1
+                else:
+                    hyp_pos[p] = 1
+
+            # get alignments for current segment
             b = align_fast(ref_w, hyp_w)
             total_aligned += len(b)
             # print(f'Alignments: {list(a)}')
             # print(f'Alignment: {list(b)}')
 
             for tup in b:
+
                 if tup[0] is None:
                     ut = hyp_tok[tup[1]]
                     utp = ut.split('_')[1]
                     print(f'{ctr} Target unaligned: {tup} :: {hyp_tok[tup[1]]} {utp}')
-                    tgt_unaligned += 1
+                    hyp_unaligned += 1
 
                     # increment tgt pos for this token
-                    if utp not in tgt_upos:
-                        tgt_upos[utp] = 0
-                    tgt_upos[utp] += 1
+                    if utp not in hyp_upos:
+                        hyp_upos[utp] = 0
+                    hyp_upos[utp] += 1
 
                 if tup[1] is None:
                     ut = ref_tok[tup[0]]
                     utp = ut.split('_')[1]
                     print(f'{ctr} Source unaligned: {tup} :: {ref_tok[tup[0]]}')
-                    src_unaligned += 1
+                    ref_unaligned += 1
 
                     # increment tgt pos for this token
-                    if utp not in src_upos:
-                        src_upos[utp] = 0
-                    src_upos[utp] += 1
+                    if utp not in ref_upos:
+                        ref_upos[utp] = 0
+                    ref_upos[utp] += 1
 
             ctr +=1
             # f
             # ind unaligned...
 
             # print_alignment(ref_w, hyp_w, b)
+        log.debug(f'Hypothesis:\t{args.hyp}')
+        log.debug(f'Reference:\t{args.ref}')
         log.debug(f'total alignments:\t{total_aligned}')
-        log.debug(f'source unaligned:\t{src_unaligned}')
-        log.debug(f'target unaligned:\t{tgt_unaligned}')
+        log.debug(f'reference unaligned:\t{ref_unaligned}')
+        log.debug(f'hypothesis unaligned:\t{hyp_unaligned}')
 
-        log.debug('Unaligned source word POS:')
-        for k, v in [(k, v) for k, v in sorted(src_upos.items(), key=lambda item: item[1], reverse=True)]:
+        log.debug('Reference POS counts:')
+        for k, v in [(k, v) for k, v in sorted(ref_pos.items(), key=lambda item: item[1], reverse=True)]:
             log.debug(f'{k}\t{v}')
 
-        log.debug('Unaligned target word POS:')
-        for k, v in [(k, v) for k, v in sorted(tgt_upos.items(), key=lambda item: item[1], reverse=True)]:
+        log.debug('Hypothesis POS counts:')
+        for k, v in [(k, v) for k, v in sorted(hyp_pos.items(), key=lambda item: item[1], reverse=True)]:
             log.debug(f'{k}\t{v}')
+
+        log.debug('Unaligned ref word POS:')
+        for k, v in [(k, v) for k, v in sorted(ref_upos.items(), key=lambda item: item[1], reverse=True)]:
+            pct = float(v) / float(ref_pos[k])
+            log.debug(f'{k}\t{v}\t{pct:.4f}')
+
+        log.debug('Unaligned hyp word POS:')
+        for k, v in [(k, v) for k, v in sorted(hyp_upos.items(), key=lambda item: item[1], reverse=True)]:
+            pct = float(v) / float(hyp_pos[k])
+            log.debug(f'{k}\t{v}\t{pct:.4f}')

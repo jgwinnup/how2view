@@ -1,7 +1,7 @@
 import argparse
 import re
 
-prog = 'kaldi_align_to_how2'
+prog = 'backfill_missing'
 __version__ = "0.0.1"
 
 if __name__ == "__main__":

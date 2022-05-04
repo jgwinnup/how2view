@@ -30,6 +30,6 @@ if __name__ == "__main__":
     print(f'Augmenting metadata')
     with open(args.infile, 'r') as infile, open(args.outfile, "w") as outfile:
         for line in infile:
-            vid_id, rest  = line.split("\t", 1) # only grab first field
+            vid_id, rest  = line.split("\t", 1)  # only grab first field
             aug = line.strip() + "\t" + yolo_labels.get(vid_id, "MISSING_VIDEO") + "\n"
             outfile.write(aug)
