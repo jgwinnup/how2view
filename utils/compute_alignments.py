@@ -5,10 +5,15 @@ import argparse
 from functools import partial
 from itertools import product
 
-# Source: https://johnlekberg.com/blog/2020-10-25-seq-align.html
+# Alignment Algorithm Source:
+# https://johnlekberg.com/blog/2020-10-25-seq-align.html
 
 prog = 'compute_alignments'
-__version__ = "0.0.1"
+__version__ = "0.0.2"
+
+# Common Universal Dependencies POS Tagset
+ud_pos_tags = ['ADJ', 'ADP', 'ADV', 'AUX', 'CCONJ', 'DET', 'INTJ', 'NOUN',
+               'NUM', 'PART', 'PRON', 'PROPN', 'PUNCT', 'SCONJ', 'SYM', 'VERB', 'X']
 
 # compute forced alignments so we can ID danglers
 def all_alignments(x, y):
@@ -169,6 +174,7 @@ if __name__ == "__main__":
     parser.add_argument("--ref", help="reference file")
     parser.add_argument("--hyp", help="hypothesis file")
     parser.add_argument("--out", help="output file")
+    parser.add_argument("--flat", help="Flat format report", default=False, action="store_true")
 
     args = parser.parse_args()
 
@@ -256,26 +262,50 @@ if __name__ == "__main__":
             # ind unaligned...
 
             # print_alignment(ref_w, hyp_w, b)
-        log.debug(f'Hypothesis:\t{args.hyp}')
-        log.debug(f'Reference:\t{args.ref}')
-        log.debug(f'total alignments:\t{total_aligned}')
-        log.debug(f'reference unaligned:\t{ref_unaligned}')
-        log.debug(f'hypothesis unaligned:\t{hyp_unaligned}')
 
-        log.debug('Reference POS counts:')
-        for k, v in [(k, v) for k, v in sorted(ref_pos.items(), key=lambda item: item[1], reverse=True)]:
-            log.debug(f'{k}\t{v}')
+        # standard verbose report
+        if not args.flat:
+            log.debug(f'Hypothesis:\t{args.hyp}')
+            log.debug(f'Reference:\t{args.ref}')
+            log.debug(f'total alignments:\t{total_aligned}')
+            log.debug(f'reference unaligned:\t{ref_unaligned}')
+            log.debug(f'hypothesis unaligned:\t{hyp_unaligned}')
 
-        log.debug('Hypothesis POS counts:')
-        for k, v in [(k, v) for k, v in sorted(hyp_pos.items(), key=lambda item: item[1], reverse=True)]:
-            log.debug(f'{k}\t{v}')
+            log.debug('Reference POS counts:')
+            for k, v in [(k, v) for k, v in sorted(ref_pos.items(), key=lambda item: item[1], reverse=True)]:
+                log.debug(f'{k}\t{v}')
 
-        log.debug('Unaligned ref word POS:')
-        for k, v in [(k, v) for k, v in sorted(ref_upos.items(), key=lambda item: item[1], reverse=True)]:
-            pct = float(v) / float(ref_pos[k])
-            log.debug(f'{k}\t{v}\t{pct:.4f}')
+            log.debug('Hypothesis POS counts:')
+            for k, v in [(k, v) for k, v in sorted(hyp_pos.items(), key=lambda item: item[1], reverse=True)]:
+                log.debug(f'{k}\t{v}')
 
-        log.debug('Unaligned hyp word POS:')
-        for k, v in [(k, v) for k, v in sorted(hyp_upos.items(), key=lambda item: item[1], reverse=True)]:
-            pct = float(v) / float(hyp_pos[k])
-            log.debug(f'{k}\t{v}\t{pct:.4f}')
+            log.debug('Unaligned ref word POS:')
+            for k, v in [(k, v) for k, v in sorted(ref_upos.items(), key=lambda item: item[1], reverse=True)]:
+                pct = float(v) / float(ref_pos[k])
+                log.debug(f'{k}\t{v}\t{pct:.4f}')
+
+            log.debug('Unaligned hyp word POS:')
+            for k, v in [(k, v) for k, v in sorted(hyp_upos.items(), key=lambda item: item[1], reverse=True)]:
+                pct = float(v) / float(hyp_pos[k])
+                log.debug(f'{k}\t{v}\t{pct:.4f}')
+
+        else:
+            # ensure they're in the same order
+            log.debug('Desc,' + ",".join(ud_pos_tags))
+
+            tc = []
+            for tag in ud_pos_tags:
+                tc.append(str(ref_pos.get(tag, 0)))
+            log.debug('Total Ref Pos,' + ",".join(tc))
+            uc = []
+            for tag in ud_pos_tags:
+                uc.append(str(ref_upos.get(tag, 0)))
+            log.debug('Total Ref Unaligned,' + ",".join(uc))
+            tc = []
+            for tag in ud_pos_tags:
+                tc.append(str(hyp_pos.get(tag, 0)))
+            log.debug('Total Hyp Pos,' + ",".join(tc))
+            uc = []
+            for tag in ud_pos_tags:
+                uc.append(str(hyp_upos.get(tag, 0)))
+            log.debug('Total Hyp Unaligned,' + ",".join(uc))
