@@ -1,7 +1,7 @@
 import argparse
 import pickle
 
-prog = 'tfidf_label_weight_corpus'
+prog = 'corpus_drop_labels'
 __version__ = "0.0.1"
 
 # YOLOv5 COCO Classes
@@ -21,9 +21,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog=prog)
     parser.add_argument("--infile", help="input file")
     parser.add_argument("--labels", help="labels file")
-    parser.add_argument("--weights", help="Weights pickle")
-    parser.add_argument("--metric", help='Which metric to use from weight pickle (tf, idf, tfidf, norm_tfidf)', default='norm_tfidf')
-    parser.add_argument('--threshold', type=float, help="Weight value threshold for class label")
+    parser.add_argument("--drop-list", help="comma separated list of labels to drop")
     parser.add_argument("--outfile", help="output weights file")
     parser.add_argument("--space-labels", default=False, action='store_true', help="Add spaces between output labels (for prespm systems)")
     parser.add_argument("--report", help="Report file for dropped labels")
@@ -31,21 +29,21 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    with open(args.weights, 'rb') as handle:
-        weights = pickle.load(handle)
-
     with open(args.infile, 'r') as infile, open(args.labels, 'r') as labelfile, open(args.outfile, 'w') as outfile, open(args.report, 'w') as report:
 
         droplist = []
-        metric = args.metric  # shorthand
-        thresh = args.threshold  # more shorthand
-        report.write(f'Pruning {metric} scores less than {thresh}\n')
 
-        for k, v in weights.items():
-            if v[metric] < thresh:
-                print(f'Key \'{k}\' below {thresh}: {v[metric]}')
-                # report.write(f'Key \'{k}\' below {thresh}: {v[metric]}\n')
-                droplist.append(k)
+        potentialdrops = args.drop_list.split(',')
+
+        for p in potentialdrops:
+            if p in names:
+                print(f'Dropping label {p}')
+                # report.write(f'Dropping label {p}\n')
+                droplist.append(p)
+            else:
+                print(f'Invalid label: {p}')
+
+        # report.write(f'Pruning {metric} scores less than {thresh}\n')
 
         totallbl = 0
         droplbl = 0
@@ -86,7 +84,7 @@ if __name__ == "__main__":
 
         # write dropped labels with scores
         for d in droplist:
-            report.write(f'Object \'{d}\' below {thresh}: {weights[d][metric]:0.4f}\n')
+            report.write(f'Dropped label {d}\n')
 
 
 
