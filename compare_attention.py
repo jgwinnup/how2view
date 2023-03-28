@@ -38,25 +38,29 @@ hyp_refs = {
     'marian-trans-yolovocab-base.n250': f'{data}/how2-yolovocab-base.en-pt.spm/test.spm.en',
 }
 
-@st.cache
+
+@st.cache_data
 def get_src_lines():
     with open(src_file, 'r') as f:
         lines = [line.rstrip() for line in f]
     return lines
 
-@st.cache
+
+@st.cache_data
 def get_ref_lines():
     with open(ref_file, 'r') as f:
         lines = [line.rstrip() for line in f]
     return lines
 
-@st.experimental_memo
+
+@st.cache_data
 def get_file_lines(fname):
     with open(fname, 'r') as f:
         lines = [line.rstrip() for line in f]
     return lines
 
-@st.experimental_memo
+
+@st.cache_data
 def get_hyp_lines(shortname):
 
     fname = f'{hypdir}/{shortname}.en-pt.spm.dev5.softalign'
@@ -71,20 +75,24 @@ def get_hyp_lines(shortname):
 
     return hyp_lines, hyp_aligns
 
-@st.cache
+
+@st.cache_data
 def get_hyp_files():
     fnames = [basename(x).replace('.en-pt.spm.dev5.align', '') for x in glob.glob(f'{hypdir}/*.align')]
     fnames.sort()
     return fnames
 
-@st.cache
+
+@st.cache_data
 def get_corpus_bleu(hyp):
     # remember to despm
     hyp_detok = [despm(h) for h in hyp]
     return sb.corpus_bleu(hyp_detok, [ref_lines])
 
+
 def despm(sent):
     return sent.replace(" ", "").replace("▁", " ")
+
 
 def score_hyp(hyp):
 
@@ -95,7 +103,8 @@ def score_hyp(hyp):
         scores.append(score)
     return scores
 
-@st.experimental_memo
+
+@st.cache_data
 def get_results_dataframe(hyp_a, hyp_b):
 
     sys_a_scores = score_hyp(hyp_a)
@@ -107,6 +116,7 @@ def get_results_dataframe(hyp_a, hyp_b):
     res_df.insert(2, 'Sys B', sys_b_scores, True)
 
     return res_df
+
 
 def build_align_grid(src_toks, hyp_toks, aligns):
 
@@ -123,6 +133,7 @@ def build_align_grid(src_toks, hyp_toks, aligns):
 
     return grid
 
+
 def gen_plot(data, src_toks, hyp_toks):
     nx, ny = data.shape
     fig, ax = plt.subplots()
@@ -136,7 +147,6 @@ def gen_plot(data, src_toks, hyp_toks):
     # ax.imshow(data, cmap='gray_r', interpolation='none')
 
     return fig
-
 
 
 if __name__ == '__main__':

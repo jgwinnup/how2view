@@ -1,4 +1,3 @@
-
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -17,6 +16,7 @@ lrp_baseline_file = f'{lrp_dir}/lrp_results/baseline'
 lrp_augmented_file = f'{lrp_dir}/lrp_results/yolov5_fixspm'
 ref_file = f'{lrp_dir}/test.spm.trim50.pt'
 
+
 # streamlit cloud config
 # lrp_dir = '.'
 # lrp_baseline_file = f'{lrp_dir}/lrp_results/baseline'
@@ -27,12 +27,14 @@ ref_file = f'{lrp_dir}/test.spm.trim50.pt'
 def desentencepiece(sent):
     return sent.replace(' ', '').replace('▁', ' ').strip()
 
+
 # For column labels
 def tok(sent):
     return sent.split(' ')
 
+
 # Load and cache reference
-@st.cache
+@st.cache_data
 def load_ref(ref_file):
     with open(ref_file, 'r') as f:
         lines = [desentencepiece(line.strip()) for line in f]
@@ -41,15 +43,15 @@ def load_ref(ref_file):
 
 
 # Load LRP results via pickle
-@st.cache
+@st.cache_data
 def load_lrp(baseline_file, augmented_file):
-
     baseline = pickle.load(open(baseline_file, 'rb'))
     augmented = pickle.load(open(augmented_file, 'rb'))
 
     return baseline, augmented
 
-@st.cache
+
+@st.cache_data
 def get_src_sents(data):
     sents = [desentencepiece(x['src']) for x in data]
     return pd.DataFrame(enumerate(sents), columns=['Id', 'Sent'])
@@ -70,6 +72,7 @@ def gen_plot(data, label='inp_lrp'):
     ax.imshow(data[label], cmap='hot', interpolation='nearest')
 
     return fig
+
 
 if __name__ == '__main__':
 
@@ -111,17 +114,14 @@ if __name__ == '__main__':
 
         if len(sel) != 0:
             # st.write(f'Sel is: {sel}')
-            id = sel[0]['Id'] # index col of src sents
+            id = sel[0]['Id']  # index col of src sents
             # st.write(f'src: {lrp_base[id]}')
-
-
 
     with col2:
 
         st.subheader('Info')
 
         if len(sel) != 0:
-
             ref = refs[id]
             base_hyp = desentencepiece(lrp_base[id]["dst"])
             aug_hyp = desentencepiece(lrp_aug[id]["dst"])
@@ -135,7 +135,7 @@ if __name__ == '__main__':
 
             # st.write(f'{id} shape: {lrp_base[id]["inp_lrp"].shape}')
             # st.write(f'{id} src: {tok(lrp_base[id]["src"])}')
-            #st.write(f'{id} dst: {tok(lrp_base[id]["dst"])}')
+            # st.write(f'{id} dst: {tok(lrp_base[id]["dst"])}')
 
     col3, col4 = st.columns(2)
 
@@ -150,4 +150,3 @@ if __name__ == '__main__':
             st.subheader('Augmented inp_lrp')
             aug_fig = gen_plot(lrp_aug[id])
             st.pyplot(aug_fig)
-
