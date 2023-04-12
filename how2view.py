@@ -13,11 +13,16 @@ from sklearn.metrics.pairwise import cosine_similarity
 from st_aggrid import AgGrid, GridUpdateMode, GridOptionsBuilder
 from wordcloud import WordCloud
 
-datadir = '/tmpssd2/how2-dataset/how2/'
-videodir = f'{datadir}/how2'
-metafname = f'{datadir}/how2-metadata.txt'
-tagfname = f'{datadir}/how2-tags.txt'
+# datadir = '/tmpssd2/how2-dataset/how2/'
+# videodir = f'{datadir}/how2'
+# metafname = f'{datadir}/how2-metadata.txt'
+# tagfname = f'{datadir}/how2-tags.txt'
 
+# nocturnum for defense demo
+datadir = '.'
+videodir = f'{datadir}/how2'
+metafname = f'model/how2-metadata.txt'
+tagfname = f'model/how2-tags.txt'
 
 # YOLOv5 COCO Classes
 # nc = 80  # number of classes
@@ -48,7 +53,7 @@ def load_yolov5_models():
     return tfidf, tfidf_vectorizer
 
 
-@st.cache
+@st.cache_data
 def get_videos(dirname):
     fnames = glob.glob(f'{datadir}/*.mp4')
     basenames = [splitext(basename(f))[0] for f in fnames]
@@ -57,13 +62,13 @@ def get_videos(dirname):
 
     return df
 
-@st.cache
+@st.cache_data
 def load_metadata(fname):
     field_list = ['id', 'duration', 'likecount', 'dislikecount', 'title', 'tags', 'description', 'objects']
     df = pd.read_csv(fname, sep='\t', names=field_list)
     return df
 
-@st.cache
+@st.cache_data
 def load_tags(fname):
 
     tags = {}
@@ -127,7 +132,7 @@ def get_tfidf_query_similarity(vectorizer, docs_tfidf, query):
     return cosine_sim
 
 
-@st.cache
+@st.cache_data
 def load_stopwords():
     # use English stopwords
     return set(stopwords.words('english'))
