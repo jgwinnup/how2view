@@ -7,12 +7,12 @@ import streamlit as st
 from st_aggrid import AgGrid, GridUpdateMode, GridOptionsBuilder
 import sacrebleu as sb
 
-how2='/tmpssd2/how2-dataset'    # base dir
-data=f'{how2}/data/yolov5-all'  # data dir
+how2='.'    # base dir
+data=f'{how2}/yolov5-all'  # data dir
 
 src_file=f'{data}/base/dev5.en'
 ref_file=f'{data}/base/dev5.pt'
-hypdir=f'{how2}/outputs/attention'
+hypdir=f'{how2}/attention'
 
 # this will have to be on a per-decode basis...
 src_base_spm=f'{data}/how2-yolovocab-base.en-pt.spm/test.spm.en'
@@ -197,6 +197,7 @@ if __name__ == '__main__':
     #st.dataframe(df)
     gb = GridOptionsBuilder.from_dataframe(df)
     gb.configure_selection(selection_mode="single", use_checkbox=False)
+    gb.configure_pagination(enabled=True, paginationAutoPageSize=False, paginationPageSize=10)
     gb.configure_column('Sys A', type=['numericColumn', 'numberColumnFilter', 'customNumericFormat'], precision = 2)
     gb.configure_column('Sys B', type=['numericColumn', 'numberColumnFilter', 'customNumericFormat'], precision = 2)
     go = gb.build()
